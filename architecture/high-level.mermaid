@@ -1,0 +1,38 @@
+graph TB
+    subgraph Providers["Channel Providers"]
+        TG["Telegram"]; LN["LINE"]; IG["Instagram"]; SL["Slack"]
+        SM["SMS / MMS"]; RC["RCS"]; MT["Teams"]; WX["Enterprise Msg"]
+    end
+
+    subgraph GW["Integration Gateway"]
+        subgraph Edge["Webhook Edge"]
+            SHARED["Shared endpoints"]
+            SCOPED["Tenant-scoped endpoints"]
+            RESOLVE["Identity Resolution"]
+        end
+        ADAPT["Channel Adapters"]
+        CORE["Inbound Processor"]
+        DISPATCH["Outbound Dispatch"]
+        REC["Rejection Recovery"]
+        ATT["Attachment Store"]
+        KEYS["Key Store"]
+        TOK["Token Scheduler"]
+        ADMIN["Admin UI"]
+    end
+
+    subgraph CC["Contact Center Platform"]
+        TASK["Task lifecycle"]
+        AGENT["Agent Desktop"]
+    end
+
+    DB[("Document Store")]
+
+    Providers --> SHARED & SCOPED --> RESOLVE --> ADAPT --> CORE --> TASK
+    TASK --> DISPATCH --> ADAPT --> Providers
+    CORE <--> ATT
+    TASK -.->|"rejects attachment"| REC --> CORE
+    KEYS & TOK --> ADAPT & CORE
+    ADMIN --> DB
+    GW <--> DB
+    AGENT --> ATT
+
